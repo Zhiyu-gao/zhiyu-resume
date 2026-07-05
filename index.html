@@ -590,6 +590,37 @@
     70% { opacity: 0.5; }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(4.2); }
   }
+  .music-toggle {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9996;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(0, 240, 255, 0.32);
+    border-radius: 50%;
+    background: rgba(3, 3, 8, 0.72);
+    color: var(--neon-cyan);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.16);
+    transition: transform 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  }
+  .music-toggle:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 0, 229, 0.5);
+    color: #fff;
+  }
+  .music-toggle.playing {
+    color: var(--neon-pink);
+    animation: musicPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes musicPulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(0, 240, 255, 0.14); }
+    50% { box-shadow: 0 0 28px rgba(255, 0, 229, 0.28); }
+  }
 
   /* ========== 功能展示区 ========== */
   .showcase {
@@ -969,6 +1000,13 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
+    .music-toggle {
+      right: 16px;
+      bottom: 16px;
+      width: 46px;
+      height: 46px;
+      font-size: 0.72rem;
+    }
     .growth-story { gap: 14px; }
     .growth-story::before { display: none; }
     .growth-item {
@@ -1013,6 +1051,8 @@
 
 <!-- 滚动进度条 -->
 <div id="progress-bar"></div>
+<audio id="bgm-audio" src="zhipu_assets/cyberpunk-sunrise.mp3" preload="none" loop></audio>
+<button id="music-toggle" class="music-toggle" type="button" aria-label="播放背景音乐">BGM</button>
 
 <!-- 背景层 -->
 <div class="grid-bg"></div>
@@ -1583,9 +1623,31 @@ document.querySelectorAll('.tilt').forEach(card => {
   });
 });
 
+/* ========== 背景音乐开关 ========== */
+const bgmAudio = document.getElementById('bgm-audio');
+const musicToggle = document.getElementById('music-toggle');
+if (bgmAudio && musicToggle) {
+  bgmAudio.volume = 0.36;
+  musicToggle.addEventListener('click', async () => {
+    if (bgmAudio.paused) {
+      try {
+        await bgmAudio.play();
+        musicToggle.classList.add('playing');
+        musicToggle.setAttribute('aria-label', '暂停背景音乐');
+      } catch (err) {
+        musicToggle.classList.remove('playing');
+      }
+      return;
+    }
+    bgmAudio.pause();
+    musicToggle.classList.remove('playing');
+    musicToggle.setAttribute('aria-label', '播放背景音乐');
+  });
+}
+
 /* ========== 空白点击反馈 ========== */
 document.addEventListener('click', (e) => {
-  const interactive = e.target.closest('a, button, input, textarea, select, label, .card, .project-card, .preview-card, .stat, .growth-item, .btn');
+  const interactive = e.target.closest('a, button, audio, input, textarea, select, label, .card, .project-card, .preview-card, .stat, .growth-item, .btn');
   if (interactive) return;
   const burst = document.createElement('span');
   burst.className = 'click-burst';
