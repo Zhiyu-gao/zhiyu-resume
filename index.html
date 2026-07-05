@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高志羽 · 个人作品集</title>
+<style>
+  /* ========== 基础重置 ========== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --neon-cyan: #00f0ff;
+    --neon-pink: #ff00e5;
+    --neon-purple: #7000ff;
+    --neon-blue: #0066ff;
+    --neon-green: #00ff9d;
+    --bg-dark: #030308;
+    --text-light: #e8e8ff;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    overflow-x: hidden;
+    cursor: auto;
+  }
+
+  /* ========== 噪点滤镜叠加 ========== */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 9990;
+  }
+
+  /* ========== 加载开场动画 ========== */
+  #loader {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #loader.hidden { opacity: 0; visibility: hidden; }
+  .loader-logo {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 900;
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 2s ease infinite;
+    margin-bottom: 30px;
+  }
+  .loader-bar-wrap {
+    width: 300px;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .loader-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+    box-shadow: 0 0 15px var(--neon-cyan);
+    transition: width 0.1s ease;
+  }
+  .loader-percent {
+    margin-top: 16px;
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    color: rgba(232,232,255,0.5);
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ========== 背景层 ========== */
+  #starfield, #particle-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  #starfield { z-index: 0; }
+  #particle-canvas { z-index: 1; }
+
+  /* 流动光团 blob */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(48px);
+    opacity: 0.28;
+    z-index: 0;
+    pointer-events: none;
+    animation: float-blob 34s ease-in-out infinite;
+  }
+  .blob-1 {
+    width: 500px; height: 500px;
+    background: var(--neon-purple);
+    top: -100px; left: -100px;
+  }
+  .blob-2 {
+    width: 400px; height: 400px;
+    background: var(--neon-pink);
+    bottom: -100px; right: -100px;
+    animation-delay: -7s;
+  }
+  .blob-3 {
+    width: 350px; height: 350px;
+    background: var(--neon-blue);
+    top: 40%; left: 50%;
+    animation-delay: -14s;
+  }
+  @keyframes float-blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(100px, -80px) scale(1.15); }
+    66% { transform: translate(-80px, 100px) scale(0.9); }
+  }
+
+  /* 网格背景 */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  /* ========== 导航栏 ========== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+    backdrop-filter: blur(20px);
+    background: rgba(3, 3, 8, 0.6);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  }
+  .logo {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    cursor: pointer;
+  }
+  nav ul { display: flex; list-style: none; gap: 40px; }
+  nav ul a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  nav ul a::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; left: 0;
+    width: 0; height: 2px;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+    transition: width 0.3s ease;
+  }
+  nav ul a:hover { color: var(--neon-cyan); }
+  nav ul a:hover::after { width: 100%; }
+
+  /* ========== Hero 区域 ========== */
+  .hero {
+    position: relative;
+    z-index: 4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+  }
+  .hero-tag {
+    font-size: 0.8rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--neon-cyan);
+    margin-bottom: 30px;
+    padding: 8px 24px;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 50px;
+    background: rgba(0, 240, 255, 0.05);
+    animation: pulse-border 2s ease-in-out infinite;
+    opacity: 0;
+    animation: pulse-border 2s ease-in-out infinite, fadeUp 0.8s ease 0.2s forwards;
+  }
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.5); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 13vw, 10rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: 0;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 40px rgba(0, 240, 255, 0.4));
+  }
+  .hero h1 .word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+  }
+  .hero h1 .char {
+    display: inline-block;
+    background: linear-gradient(135deg, #fff 0%, var(--neon-cyan) 35%, var(--neon-pink) 70%, var(--neon-purple) 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 6s ease infinite, charRise 0.8s cubic-bezier(0.5, 0, 0.1, 1) both;
+  }
+  @keyframes charRise {
+    from { opacity: 0; transform: translateY(120%) rotate(15deg); }
+    to { opacity: 1; transform: translateY(0) rotate(0); }
+  }
+
+  .hero .typewriter {
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
+    color: rgba(232, 232, 255, 0.75);
+    margin-bottom: 50px;
+    min-height: 2em;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.5s forwards;
+  }
+  .cursor-blink {
+    display: inline-block;
+    width: 3px;
+    height: 1.2em;
+    background: var(--neon-cyan);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .btn-group { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; opacity: 0; animation: fadeUp 0.8s ease 1.8s forwards; }
+  .btn {
+    padding: 16px 44px;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255, 0, 229, 0.4);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 60px rgba(255, 0, 229, 0.9);
+    transform: translateY(-3px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--neon-cyan);
+    border: 1px solid var(--neon-cyan);
+  }
+  .btn-ghost:hover {
+    background: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    transform: translateY(-3px);
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s ease;
+  }
+  .btn:hover::before { left: 100%; }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: rgba(232, 232, 255, 0.4);
+    text-transform: uppercase;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  /* ========== 通用 section ========== */
+  .section {
+    position: relative;
+    z-index: 4;
+    width: 100%;
+    padding: 120px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .section-title span {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .section-subtitle {
+    text-align: center;
+    color: rgba(232, 232, 255, 0.5);
+    margin-bottom: 80px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  /* ========== 特性卡片 ========== */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    perspective: 1000px;
+  }
+  .card {
+    position: relative;
+    padding: 40px 30px;
+    background: linear-gradient(135deg, rgba(0,240,255,0.04), rgba(112,0,255,0.06));
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.1s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    overflow: hidden;
+    cursor: auto;
+  }
+  /* 卡片边框流光跑马灯 */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: conic-gradient(from var(--angle, 0deg), transparent 0%, var(--neon-cyan) 10%, var(--neon-pink) 20%, transparent 30%, transparent 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    animation: rotate-border 4s linear infinite;
+  }
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes rotate-border {
+    to { --angle: 360deg; }
+  }
+  .card:hover::before { opacity: 1; }
+  .card:hover {
+    box-shadow: 0 20px 60px rgba(0, 240, 255, 0.15), 0 0 40px rgba(112, 0, 255, 0.15);
+  }
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    display: inline-block;
+    filter: drop-shadow(0 0 15px var(--neon-cyan));
+    transition: transform 0.4s ease;
+  }
+  .card:hover .card-icon { transform: scale(1.2) rotate(10deg); }
+  .card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+  .card p {
+    color: rgba(232, 232, 255, 0.6);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+
+  /* ========== 数据统计 ========== */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 30px;
+    margin-top: 60px;
+  }
+  .stat {
+    text-align: center;
+    padding: 30px 20px;
+    border: 1px solid rgba(255, 0, 229, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 0, 229, 0.04);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .stat:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(255, 0, 229, 0.2);
+  }
+  .stat-number {
+    font-size: 2.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(232, 232, 255, 0.5);
+    margin-top: 8px;
+  }
+  .growth-story {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    max-width: 1120px;
+    margin: 58px auto 0;
+    min-width: 0;
+  }
+  .growth-story::before {
+    content: '';
+    position: absolute;
+    left: 168px;
+    top: 24px;
+    bottom: 24px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(0,240,255,0.06), rgba(0,240,255,0.56), rgba(255,0,229,0.46), rgba(255,0,229,0.06));
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.18);
+  }
+  .growth-item {
+    position: relative;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 42px;
+    padding: 24px 0;
+  }
+  .growth-node {
+    position: absolute;
+    top: 34px;
+    left: 156px;
+    z-index: 2;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: 4px solid #050714;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.32);
+    color: transparent;
+    font-size: 0;
+  }
+  .growth-year {
+    padding-top: 3px;
+    color: rgba(232, 232, 255, 0.8);
+    font-weight: 900;
+    letter-spacing: 2px;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1;
+  }
+  .growth-state {
+    display: block;
+    margin-top: 12px;
+    color: rgba(232, 232, 255, 0.42);
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+  }
+  .growth-content {
+    padding: 24px 28px;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    border-radius: 10px;
+    background:
+      linear-gradient(rgba(255,255,255,0.024) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.024) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(0,240,255,0.052), rgba(255,0,229,0.036));
+    background-size: 28px 28px, 28px 28px, auto;
+  }
+  .growth-content h3 {
+    color: #fff;
+    font-size: 1.22rem;
+    margin-bottom: 10px;
+  }
+  .growth-content p {
+    color: rgba(232, 232, 255, 0.64);
+    line-height: 1.75;
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+  .growth-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0;
+  }
+  .growth-tags span {
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(3, 3, 8, 0.58);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    color: rgba(232, 232, 255, 0.72);
+    font-size: 0.74rem;
+  }
+  .growth-item.future .growth-content {
+    border-style: dashed;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.025), rgba(0,240,255,0.03)),
+      rgba(3, 3, 8, 0.48);
+  }
+  .click-burst {
+    position: fixed;
+    left: var(--x);
+    top: var(--y);
+    z-index: 9995;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(0, 240, 255, 0.9);
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.55), inset 0 0 14px rgba(255, 0, 229, 0.35);
+    animation: clickBurst 680ms ease-out forwards;
+  }
+  .click-burst::before,
+  .click-burst::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,240,255,0.9), rgba(255,0,229,0.7), transparent);
+    transform-origin: center;
+  }
+  .click-burst::before { transform: translate(-50%, -50%) rotate(22deg); }
+  .click-burst::after { transform: translate(-50%, -50%) rotate(-22deg); }
+  @keyframes clickBurst {
+    0% { opacity: 0.95; transform: translate(-50%, -50%) scale(0.35); }
+    70% { opacity: 0.5; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(4.2); }
+  }
+
+  /* ========== 功能展示区 ========== */
+  .showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .showcase-visual {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,0,229,0.08));
+    border: 1px solid rgba(0,240,255,0.2);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .orb {
+    width: 60%; height: 60%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--neon-cyan), var(--neon-purple) 50%, var(--neon-pink));
+    box-shadow: 0 0 80px rgba(0,240,255,0.5), inset -20px -20px 60px rgba(0,0,0,0.4);
+    animation: orb-spin 8s linear infinite;
+  }
+  @keyframes orb-spin {
+    0% { transform: rotate(0) scale(1); }
+    50% { transform: rotate(180deg) scale(1.08); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .orbit {
+    position: absolute;
+    border: 1px dashed rgba(0,240,255,0.3);
+    border-radius: 50%;
+    animation: orbit-rotate 15s linear infinite;
+  }
+  .orbit-1 { width: 80%; height: 80%; }
+  .orbit-2 { width: 95%; height: 95%; animation-duration: 25s; animation-direction: reverse; }
+  .orbit::after {
+    content: '';
+    position: absolute;
+    top: -5px; left: 50%;
+    width: 10px; height: 10px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 15px var(--neon-cyan);
+    transform: translateX(-50%);
+  }
+  .orbit-2::after { background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); }
+  @keyframes orbit-rotate { to { transform: rotate(360deg); } }
+
+  .showcase-text h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+  .showcase-text p {
+    color: rgba(232,232,255,0.6);
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+  .feature-list { list-style: none; }
+  .feature-list li {
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(232,232,255,0.8);
+    border-bottom: 1px solid rgba(0,240,255,0.08);
+  }
+  .feature-list .check {
+    color: var(--neon-green);
+    font-weight: 900;
+    text-shadow: 0 0 10px var(--neon-green);
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .tag {
+    padding: 7px 12px;
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(0, 240, 255, 0.06);
+    color: rgba(232, 232, 255, 0.75);
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+  }
+  .profile-panel {
+    position: absolute;
+    width: min(78%, 420px);
+    padding: 28px;
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    border-radius: 16px;
+    background: rgba(3, 3, 8, 0.72);
+    box-shadow: 0 0 60px rgba(0, 240, 255, 0.12);
+    backdrop-filter: blur(14px);
+  }
+  .profile-name {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff, var(--neon-cyan), var(--neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 18px;
+  }
+  .profile-meta {
+    display: grid;
+    gap: 10px;
+    color: rgba(232, 232, 255, 0.68);
+    line-height: 1.6;
+  }
+  .timeline {
+    display: grid;
+    gap: 18px;
+    margin-top: 26px;
+  }
+  .timeline-item {
+    padding: 18px 20px;
+    border-left: 2px solid var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.045);
+  }
+  .timeline-item h3 {
+    font-size: 1.05rem;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .timeline-item .role {
+    color: var(--neon-cyan);
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+  }
+  .timeline-item p { margin-bottom: 0; }
+
+  /* ========== GitHub 作品预览 ========== */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .project-card {
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    border: 1px solid rgba(255, 0, 229, 0.18);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,0,229,0.06), rgba(0,240,255,0.04));
+    text-decoration: none;
+    color: var(--text-light);
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 240, 255, 0.42);
+    box-shadow: 0 18px 50px rgba(0, 240, 255, 0.13);
+  }
+  .project-card h3 {
+    color: #fff;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+  .project-card p {
+    color: rgba(232, 232, 255, 0.65);
+    line-height: 1.7;
+    flex: 1;
+  }
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 22px 0 16px;
+  }
+  .project-meta span {
+    font-size: 0.78rem;
+    color: rgba(232, 232, 255, 0.72);
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .project-link {
+    color: var(--neon-cyan);
+    font-size: 0.86rem;
+    letter-spacing: 1px;
+  }
+
+  .preview-heading {
+    margin-top: 90px;
+    text-align: center;
+  }
+  .preview-heading h3 {
+    font-size: clamp(1.8rem, 4vw, 2.7rem);
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .preview-heading p {
+    color: rgba(232, 232, 255, 0.54);
+    line-height: 1.7;
+  }
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 22px;
+    margin-top: 38px;
+  }
+  .preview-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 240, 255, 0.18);
+    border-radius: 14px;
+    background: rgba(3, 3, 8, 0.68);
+    min-height: 410px;
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-media {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,0,229,0.06));
+    background-size: 30px 30px, 30px 30px, auto;
+  }
+  .preview-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 16px;
+    display: block;
+  }
+  .preview-media.contain img {
+    object-fit: contain;
+    padding: 16px;
+  }
+  .preview-overlay {
+    position: absolute;
+    inset: auto 16px 16px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .preview-badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(3, 3, 8, 0.76);
+    border: 1px solid rgba(0, 240, 255, 0.24);
+    color: rgba(232, 232, 255, 0.88);
+    font-size: 0.75rem;
+    backdrop-filter: blur(10px);
+  }
+  .preview-body {
+    padding: 24px;
+    flex: 1;
+  }
+  .preview-body h4 {
+    color: #fff;
+    font-size: 1.18rem;
+    margin-bottom: 10px;
+  }
+  .preview-body p {
+    color: rgba(232, 232, 255, 0.64);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+  /* ========== CTA ========== */
+  .cta {
+    position: relative;
+    z-index: 4;
+    padding: 120px 60px;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(112,0,255,0.1), transparent);
+  }
+  .cta h2 {
+    font-size: clamp(2rem, 7vw, 5rem);
+    font-weight: 900;
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+  .glitch-text {
+    position: relative;
+    color: #fff;
+    display: inline-block;
+  }
+  .glitch-text::before, .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .glitch-text::before {
+    color: var(--neon-pink);
+    animation: glitch-1 2.5s infinite linear alternate-reverse;
+    clip-path: inset(0 0 60% 0);
+  }
+  .glitch-text::after {
+    color: var(--neon-cyan);
+    animation: glitch-2 3s infinite linear alternate-reverse;
+    clip-path: inset(60% 0 0 0);
+  }
+  @keyframes glitch-1 {
+    0%, 92%, 100% { transform: translate(0); }
+    20% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -2px); }
+    60% { transform: translate(-2px, 1px); }
+  }
+  @keyframes glitch-2 {
+    0%, 92%, 100% { transform: translate(0); }
+    20% { transform: translate(4px, -2px); }
+    40% { transform: translate(-4px, 2px); }
+    60% { transform: translate(2px, -1px); }
+  }
+
+  /* ========== 页脚 ========== */
+  footer {
+    position: relative;
+    z-index: 4;
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid rgba(0, 240, 255, 0.15);
+    color: rgba(232, 232, 255, 0.4);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  /* ========== 滚动渐入 ========== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ========== 滚动进度条 ========== */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+    z-index: 99996;
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  /* ========== 响应式 ========== */
+  @media (max-width: 768px) {
+    #particle-canvas { display: none; }
+    nav { padding: 15px 20px; }
+    nav ul { gap: 18px; }
+    nav ul a { font-size: 0.75rem; }
+    .section { padding: 80px 20px; }
+    .showcase { grid-template-columns: 1fr; gap: 40px; }
+    .profile-panel { width: 88%; padding: 22px; }
+    .project-grid { grid-template-columns: 1fr; }
+    .preview-grid { grid-template-columns: 1fr; }
+    .preview-media { height: 220px; }
+    .stats,
+    .growth-story {
+      width: 100%;
+      max-width: 340px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .growth-story { gap: 14px; }
+    .growth-story::before { display: none; }
+    .growth-item {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding-left: 0;
+    }
+    .growth-node {
+      left: 0;
+      top: 25px;
+      width: 27px;
+      height: 27px;
+    }
+    .growth-year {
+      font-size: 1.7rem;
+      padding-left: 42px;
+    }
+    .growth-content {
+      width: 100%;
+      padding: 20px;
+    }
+    .btn, a, .card, .project-card { cursor: pointer; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+    #particle-canvas { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 加载动画 -->
+<div id="loader">
+  <div class="loader-logo">ZHIYU</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+  <div class="loader-percent" id="loader-percent">初始化中... 0%</div>
+</div>
+
+<!-- 滚动进度条 -->
+<div id="progress-bar"></div>
+
+<!-- 背景层 -->
+<div class="grid-bg"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<canvas id="starfield"></canvas>
+<canvas id="particle-canvas"></canvas>
+
+<!-- 导航栏 -->
+<nav>
+  <div class="logo">◆ ZHIYU</div>
+  <ul>
+    <li><a href="#skills">技能</a></li>
+    <li><a href="#experience">经历</a></li>
+    <li><a href="#projects">作品</a></li>
+    <li><a href="#contact">联系</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag">✦ DATA SCIENCE / AI / FULL STACK</div>
+  <h1 id="hero-title"></h1>
+  <p class="typewriter"><span id="typed"></span><span class="cursor-blink"></span></p>
+  <div class="btn-group">
+    <a href="#projects" class="btn btn-primary magnetic">查看作品</a>
+    <a href="https://github.com/Zhiyu-gao" target="_blank" rel="noopener" class="btn btn-ghost magnetic">GitHub</a>
+  </div>
+  <div class="scroll-hint">↓ 向下滚动 ↓</div>
+</section>
+
+<!-- 特性卡片 -->
+<section class="section" id="skills">
+  <h2 class="section-title reveal">核心<span>能力</span></h2>
+  <p class="section-subtitle reveal">面向真实业务的全栈开发、AI 应用与数据工程能力</p>
+  <div class="cards">
+    <div class="card reveal tilt"><div class="card-icon">API</div><h3>Python 后端</h3><p>使用 FastAPI、Django 与业务服务构建 RESTful API，熟悉认证、ORM、数据迁移与接口联调。</p></div>
+    <div class="card reveal tilt"><div class="card-icon">UI</div><h3>前端工程</h3><p>熟悉 React、Vue3、Element Plus、Ant Design、ECharts 与 Three.js，能独立完成高保真页面还原和交互开发。</p></div>
+    <div class="card reveal tilt"><div class="card-icon">AI</div><h3>RAG 与 Agent</h3><p>实践过 LangGraph、RAG、多模型调用、找书 Agent 与 AI 助手，关注 Agent 工作流和微调训练方向。</p></div>
+    <div class="card reveal tilt"><div class="card-icon">DB</div><h3>数据库与云</h3><p>使用 MySQL、Redis、PolarDB、阿里云 OSS，能够完成数据建模、存储查询、基础部署与服务配置。</p></div>
+    <div class="card reveal tilt"><div class="card-icon">BOT</div><h3>爬虫与数据管道</h3><p>使用 Playwright 与通用爬虫方案采集业务数据，完成从元数据获取、正文处理到入库上传的自动化链路。</p></div>
+    <div class="card reveal tilt"><div class="card-icon">OPS</div><h3>工程化部署</h3><p>接触 Docker、Nginx、Prometheus、Grafana、服务器部署与远程连接方案，愿意继续深入真实线上环境。</p></div>
+  </div>
+</section>
+
+<!-- 能力展示 -->
+<section class="section" id="experience">
+  <div class="showcase">
+    <div class="showcase-visual reveal">
+      <div class="orbit orbit-2"></div>
+      <div class="orbit orbit-1"></div>
+      <div class="orb"></div>
+      <div class="profile-panel">
+        <div class="profile-name">高志羽</div>
+        <div class="profile-meta">
+          <span>上海第二工业大学 · 数据科学与大数据技术</span>
+          <span>2027 年 6 月毕业 · 上海</span>
+          <span>17717356613 · 2187669042@qq.com</span>
+        </div>
+      </div>
+    </div>
+    <div class="showcase-text reveal">
+      <h2>把 AI、数据和全栈工程落到真实项目里</h2>
+      <p>有多段实习经历和从 0 到 1 的项目开发实践，能参与后端服务、前端页面、数据采集、AI 能力接入和基础部署。期待未来在金融、医疗等领域深耕，维护真实线上环境，继续提升高并发与工程稳定性能力。</p>
+      <ul class="feature-list">
+        <li><span class="check">✦</span> 全国大学生计算机设计大赛三等奖</li>
+        <li><span class="check">✦</span> 上海市工程能力创新与实践赛二等奖</li>
+        <li><span class="check">✦</span> AI+教育应用大赛三等奖</li>
+      </ul>
+      <div class="tag-list">
+        <span class="tag">Python</span><span class="tag">React</span><span class="tag">Vue3</span><span class="tag">FastAPI</span><span class="tag">Django</span><span class="tag">MySQL</span><span class="tag">Redis</span><span class="tag">LangGraph</span>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item"><h3>北京细红线科技有限公司</h3><div class="role">算法实习生</div><p>维护一卒书库 PC 端书评生成功能，基于 Gemini API 构建数据获取到内容生成的 pipeline，并搭建找书 Agent。</p></div>
+        <div class="timeline-item"><h3>上海浩海星空有限公司</h3><div class="role">前端实习生</div><p>基于 Ruoyi 开源框架完成企业级管理系统前端模块二次开发，负责 UI 高保真还原与接口联调。</p></div>
+        <div class="timeline-item"><h3>上海沐钼科技有限公司</h3><div class="role">全栈实习生</div><p>使用 Django、MySQL、Vue3、Three.js 开发 3D 模型在线查看模块，并接入腾讯混元文生图能力。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GitHub 作品预览 -->
+<section class="section" id="projects">
+  <h2 class="section-title reveal">作品<span>预览</span></h2>
+  <p class="section-subtitle reveal">从 GitHub 公开仓库整理出的重点项目入口</p>
+  <div class="project-grid">
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/word-pk" target="_blank" rel="noopener">
+      <h3>word-pk</h3>
+      <p>公开仓库中最新更新的前后端项目，采用 React、TypeScript 与 Python 后端结构，适合作为后续完善演示与业务说明的入口。</p>
+      <div class="project-meta"><span>TypeScript</span><span>React</span><span>Python</span><span>Vite</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/Carprice-fastapi-react" target="_blank" rel="noopener">
+      <h3>Carprice-fastapi-react</h3>
+      <p>二手车智能平台，覆盖数据采集、价格预测、AI 问答、论坛私信、大屏分析、网页端与移动端统一展示。</p>
+      <div class="project-meta"><span>TypeScript</span><span>FastAPI</span><span>React</span><span>Docker</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/education-platform" target="_blank" rel="noopener">
+      <h3>education-platform</h3>
+      <p>融合 RAG 的智能教育平台，实现四层级权限体系、教育内容检索增强、学习行为预测与个性化推荐能力。</p>
+      <div class="project-meta"><span>Vue</span><span>Java</span><span>Python</span><span>RAG</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/HXY" target="_blank" rel="noopener">
+      <h3>HXY</h3>
+      <p>肺部结节疾病预测与影像识别系统，集成登录、数据可视化、结构化指标预测、CT 影像识别演示与 AI 问诊。</p>
+      <div class="project-meta"><span>Python</span><span>AI</span><span>Visualization</span><span>Medical</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/Housepredict-fastapi-react" target="_blank" rel="noopener">
+      <h3>Housepredict-fastapi-react</h3>
+      <p>房价预测全栈系统，包含 React 前端、FastAPI 后端、机器学习推理、房源数据管理和多模型 AI 分析。</p>
+      <div class="project-meta"><span>TypeScript</span><span>FastAPI</span><span>ML</span><span>LangGraph</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/manhole_cover-detection" target="_blank" rel="noopener">
+      <h3>manhole_cover-detection</h3>
+      <p>井盖检测相关项目，公开仓库语言构成为 Python、Vue 与 Notebook，适合展示视觉识别和工程原型能力。</p>
+      <div class="project-meta"><span>Python</span><span>Vue</span><span>Notebook</span><span>Detection</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+    <a class="project-card reveal" href="https://github.com/Zhiyu-gao/photology" target="_blank" rel="noopener">
+      <h3>photology</h3>
+      <p>Django 光学仿真与可视化项目，包含光线追迹、波前分析、PSF/MTF 等课堂演示和实验记录场景。</p>
+      <div class="project-meta"><span>HTML</span><span>Django</span><span>MySQL</span><span>Simulation</span></div>
+      <div class="project-link">打开 GitHub →</div>
+    </a>
+  </div>
+
+  <div class="preview-heading reveal">
+    <h3>项目快速预览</h3>
+  </div>
+  <div class="preview-grid">
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/car-visualization.webp" alt="二手车智能平台数据可视化大屏">
+        <div class="preview-overlay"><span class="preview-badge">数据可视化大屏</span><span class="preview-badge">ECharts</span><span class="preview-badge">500 条车源样例</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>二手车智能平台 · 市场洞察</h4>
+        <p>展示车辆分布、价格区间、省份排行、过户次数和品牌热度，突出“数据采集 + 分析大屏 + 预测服务”的完整链路。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media">
+        <img src="zhipu_assets/manhole-result.webp" alt="井盖隐患预测上传检测页">
+        <div class="preview-overlay"><span class="preview-badge">上传检测页</span><span class="preview-badge">井盖缺失</span><span class="preview-badge">label [2]</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>井盖隐患预测 · 检测结果</h4>
+        <p>对应仓库里的上传预测流程：选择井盖图片，点击“上传并检测”，后端返回图片路径与类别标签，再在页面中映射为井盖缺失等结果。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/photology-psf.webp" alt="Photology 光学系统 PSF 和 MTF 计算页面">
+        <div class="preview-overlay"><span class="preview-badge">PSF / MTF</span><span class="preview-badge">参数输入</span><span class="preview-badge">光学计算</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>Photology · 光学可视化</h4>
+        <p>对应仓库中的平面波/球面波折射与 PSF/MTF 页面，核心是参数输入后生成光线图、点扩散函数和调制传递函数。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/hxy-dashboard.webp" alt="肺部结节疾病预测系统总览页面">
+        <div class="preview-overlay"><span class="preview-badge">系统总览</span><span class="preview-badge">风险分布</span><span class="preview-badge">AI 问诊</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>肺部结节预测 · 系统总览</h4>
+        <p>项目集成结构化指标预测、影像识别演示、数据看板和在线问诊，适合展示医疗场景下的全栈 AI 应用探索。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/education-auth.webp" alt="智能教育平台 Pad 端登录页">
+        <div class="preview-overlay"><span class="preview-badge">Pad 登录页</span><span class="preview-badge">权限入口</span><span class="preview-badge">教育平台</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>智能教育平台 · Pad 端登录</h4>
+        <p>用四层级权限体系、三级部门架构和学习行为预测模块，展示教育管理系统与 AI 问答结合的工程能力。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/house-predict.webp" alt="房价预测系统预测表单页面">
+        <div class="preview-overlay"><span class="preview-badge">预测表单</span><span class="preview-badge">Ant Design</span><span class="preview-badge">FastAPI</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>房价预测系统 · 预测表单</h4>
+        <p>对应仓库中的 React 前端、FastAPI 后端、ML 推理和多模型 AI 分析服务，适合展示预测类系统的通用架构。</p>
+      </div>
+    </article>
+
+    <article class="preview-card reveal">
+      <div class="preview-media contain">
+        <img src="zhipu_assets/wordpk-home.webp" alt="word-pk 单词大作战首页">
+        <div class="preview-overlay"><span class="preview-badge">单词大作战</span><span class="preview-badge">学习模式</span><span class="preview-badge">排行榜</span></div>
+      </div>
+      <div class="preview-body">
+        <h4>word-pk · 单词大作战首页</h4>
+        <p>公开仓库中的 Vite + TypeScript 前端首页，展示背词、闯关、排行榜和个人学习进度等核心功能入口。</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- 数据统计 -->
+<section class="section" id="stats">
+  <h2 class="section-title reveal">成长<span>轨迹</span></h2>
+  <p class="section-subtitle reveal">从一次失利开始，把精力一步步落到竞赛、项目和真实业务里</p>
+  <div class="stats">
+    <div class="stat reveal"><div class="stat-number" data-target="7" data-suffix="">0</div><div class="stat-label">公开仓库</div></div>
+    <div class="stat reveal"><div class="stat-number" data-target="3" data-suffix="">0</div><div class="stat-label">实习经历</div></div>
+    <div class="stat reveal"><div class="stat-number" data-target="2" data-suffix="">0</div><div class="stat-label">重点项目</div></div>
+    <div class="stat reveal"><div class="stat-number" data-target="2027" data-suffix="">0</div><div class="stat-label">毕业年份</div></div>
+  </div>
+  <div class="growth-story">
+    <article class="growth-item reveal">
+      <div class="growth-node"></div>
+      <div class="growth-year">大一<span class="growth-state">失利之后，重新校准</span></div>
+      <div class="growth-content">
+        <h3>备战插班生，遗憾落败</h3>
+        <p>大一把主要精力投入插班生备考，最后没有拿到理想结果。它不是一个漂亮的开头，但让我更早明白：真正能改变处境的，不只是一次考试，而是持续投入之后留下来的能力和作品。</p>
+        <div class="growth-tags"><span>高强度备考</span><span>复盘</span><span>重新出发</span></div>
+      </div>
+    </article>
+    <article class="growth-item reveal">
+      <div class="growth-node"></div>
+      <div class="growth-year">大二<span class="growth-state">把学习做成项目</span></div>
+      <div class="growth-content">
+        <h3>积极参加竞赛，完成全栈项目</h3>
+        <p>大二开始把注意力转向更可见的成果：参加竞赛，做完整项目，从页面、接口、数据库到模型能力接入，慢慢把零散知识组织成一个可以运行、可以展示的系统。</p>
+        <div class="growth-tags"><span>竞赛</span><span>React / Vue</span><span>FastAPI / Django</span><span>AI 应用</span></div>
+      </div>
+    </article>
+    <article class="growth-item reveal">
+      <div class="growth-node"></div>
+      <div class="growth-year">大三<span class="growth-state">进入真实协作</span></div>
+      <div class="growth-content">
+        <h3>参与三段实习，补齐工程现场感</h3>
+        <p>大三进入真实业务场景，分别接触算法、前端和全栈方向。书评生成、企业管理系统、3D 模型查看、大模型接口接入这些经历，让我开始理解“能跑起来”和“能交付出去”之间的距离。</p>
+        <div class="growth-tags"><span>算法实习</span><span>前端实习</span><span>全栈实习</span><span>业务交付</span></div>
+      </div>
+    </article>
+    <article class="growth-item future reveal">
+      <div class="growth-node"></div>
+      <div class="growth-year">大四<span class="growth-state">还没有写下</span></div>
+      <div class="growth-content">
+        <h3>未知</h3>
+        <p>未知。</p>
+        <div class="growth-tags"><span>待书写</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contact">
+  <h2 class="glitch-text reveal" data-text="一起构建真实系统">一起构建真实系统</h2>
+  <p class="section-subtitle reveal">电话：17717356613 · 邮箱：2187669042@qq.com</p>
+  <a href="https://github.com/Zhiyu-gao" target="_blank" rel="noopener" class="btn btn-primary magnetic">访问 GitHub</a>
+</section>
+
+<footer>◆ 高志羽 · Personal Portfolio · © 2026</footer>
+
+<script>
+/* ========== 加载动画 ========== */
+const loader = document.getElementById('loader');
+const loaderBar = document.getElementById('loader-bar');
+const loaderPercent = document.getElementById('loader-percent');
+let loadProgress = 0;
+const loadInterval = setInterval(() => {
+  loadProgress += Math.random() * 15 + 5;
+  if (loadProgress >= 100) {
+    loadProgress = 100;
+    clearInterval(loadInterval);
+    setTimeout(() => {
+      loader.classList.add('hidden');
+      startHeroAnimation();
+    }, 400);
+  }
+  loaderBar.style.width = loadProgress + '%';
+  loaderPercent.textContent = '初始化中... ' + Math.floor(loadProgress) + '%';
+}, 120);
+
+/* ========== Hero 标题逐字符动画 ========== */
+const heroTitle = document.getElementById('hero-title');
+const titleText = 'GAO\nZHIYU';
+function buildHeroTitle() {
+  heroTitle.innerHTML = '';
+  const lines = titleText.split('\n');
+  let charDelay = 0.8;
+  lines.forEach((line, li) => {
+    const wordDiv = document.createElement('span');
+    wordDiv.className = 'word';
+    [...line].forEach(ch => {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = ch;
+      span.style.animationDelay = `${charDelay}s, ${charDelay}s`;
+      charDelay += 0.06;
+      wordDiv.appendChild(span);
+    });
+    heroTitle.appendChild(wordDiv);
+    if (li < lines.length - 1) heroTitle.appendChild(document.createElement('br'));
+  });
+}
+function startHeroAnimation() { buildHeroTitle(); }
+
+/* ========== 星空背景 ========== */
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+let stars = [], meteors = [];
+let resizeTimer = null;
+
+function resizeCanvases() {
+  [starCanvas, document.getElementById('particle-canvas')].forEach(c => {
+    c.width = window.innerWidth; c.height = window.innerHeight;
+  });
+}
+resizeCanvases();
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { resizeCanvases(); initStars(); initParticles(); }, 180);
+});
+
+function initStars() {
+  stars = [];
+  const count = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 12000));
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      size: Math.random() * 1.5 + 0.3,
+      twinkle: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.012 + 0.004,
+      parallax: Math.random() * 0.5 + 0.1
+    });
+  }
+}
+initStars();
+
+class Meteor {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * starCanvas.width;
+    this.y = -50;
+    this.len = Math.random() * 120 + 80;
+    this.speed = Math.random() * 8 + 6;
+    this.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.3;
+    this.alive = true;
+  }
+  update() {
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+    if (this.x > starCanvas.width + 100 || this.y > starCanvas.height + 100) this.alive = false;
+  }
+  draw() {
+    const tailX = this.x - Math.cos(this.angle) * this.len;
+    const tailY = this.y - Math.sin(this.angle) * this.len;
+    const grad = starCtx.createLinearGradient(this.x, this.y, tailX, tailY);
+    grad.addColorStop(0, 'rgba(0,240,255,1)');
+    grad.addColorStop(0.5, 'rgba(0,240,255,0.4)');
+    grad.addColorStop(1, 'rgba(0,240,255,0)');
+    starCtx.strokeStyle = grad;
+    starCtx.lineWidth = 2;
+    starCtx.beginPath();
+    starCtx.moveTo(this.x, this.y);
+    starCtx.lineTo(tailX, tailY);
+    starCtx.stroke();
+    starCtx.shadowBlur = 10;
+    starCtx.shadowColor = '#00f0ff';
+    starCtx.fillStyle = '#fff';
+    starCtx.beginPath();
+    starCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+    starCtx.fill();
+    starCtx.shadowBlur = 0;
+  }
+}
+
+let scrollOffset = 0;
+let lastStarFrame = 0;
+function animateStars(now = 0) {
+  if (document.hidden) {
+    requestAnimationFrame(animateStars);
+    return;
+  }
+  if (now - lastStarFrame < 50) {
+    requestAnimationFrame(animateStars);
+    return;
+  }
+  lastStarFrame = now;
+  starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+  stars.forEach(s => {
+    s.twinkle += s.speed;
+    const alpha = (Math.sin(s.twinkle) + 1) / 2 * 0.8 + 0.2;
+    starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+    const py = (s.y + scrollOffset * s.parallax) % starCanvas.height;
+    starCtx.beginPath();
+    starCtx.arc(s.x, py < 0 ? py + starCanvas.height : py, s.size, 0, Math.PI * 2);
+    starCtx.fill();
+  });
+  // 随机生成流星
+  if (Math.random() < 0.006) meteors.push(new Meteor());
+  meteors = meteors.filter(m => m.alive);
+  meteors.forEach(m => { m.update(); m.draw(); });
+  requestAnimationFrame(animateStars);
+}
+animateStars();
+
+/* ========== 粒子网络 ========== */
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const mobileParticleQuery = window.matchMedia('(max-width: 768px)');
+function shouldAnimateParticles() {
+  return !reduceMotionQuery.matches && !mobileParticleQuery.matches;
+}
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * pCanvas.width;
+    this.y = Math.random() * pCanvas.height;
+    this.vx = (Math.random() - 0.5) * 0.32;
+    this.vy = (Math.random() - 0.5) * 0.32;
+    this.size = Math.random() * 1.5 + 0.4;
+    const colors = ['#00f0ff', '#ff00e5', '#7000ff'];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < 0) this.x = pCanvas.width;
+    if (this.x > pCanvas.width) this.x = 0;
+    if (this.y < 0) this.y = pCanvas.height;
+    if (this.y > pCanvas.height) this.y = 0;
+  }
+  draw() {
+    pCtx.beginPath();
+    pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    pCtx.fillStyle = this.color;
+    pCtx.fill();
+  }
+}
+function initParticles() {
+  particles = [];
+  if (!shouldAnimateParticles()) return;
+  const count = Math.min(46, Math.floor(window.innerWidth / 28));
+  for (let i = 0; i < count; i++) particles.push(new Particle());
+}
+initParticles();
+
+let lastParticleFrame = 0;
+function animateParticles(now = 0) {
+  if (!shouldAnimateParticles()) {
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    setTimeout(() => requestAnimationFrame(animateParticles), 500);
+    return;
+  }
+  if (document.hidden) {
+    requestAnimationFrame(animateParticles);
+    return;
+  }
+  if (now - lastParticleFrame < 66) {
+    requestAnimationFrame(animateParticles);
+    return;
+  }
+  lastParticleFrame = now;
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 95) {
+        pCtx.beginPath();
+        pCtx.strokeStyle = particles[i].color;
+        pCtx.globalAlpha = (1 - dist / 95) * 0.18;
+        pCtx.lineWidth = 0.5;
+        pCtx.moveTo(particles[i].x, particles[i].y);
+        pCtx.lineTo(particles[j].x, particles[j].y);
+        pCtx.stroke();
+      }
+    }
+  }
+  pCtx.globalAlpha = 1; pCtx.shadowBlur = 0;
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ========== 打字机 ========== */
+const phrases = ['数据科学与大数据技术本科 ✦', 'FastAPI / React / Vue 全栈实践', 'RAG 与 Agent 应用探索中', '把想法部署成真实系统'];
+let phraseIndex = 0, charIndex = 0, isDeleting = false;
+const typedEl = document.getElementById('typed');
+function typeEffect() {
+  const current = phrases[phraseIndex];
+  if (isDeleting) { typedEl.textContent = current.substring(0, charIndex - 1); charIndex--; }
+  else { typedEl.textContent = current.substring(0, charIndex + 1); charIndex++; }
+  let speed = isDeleting ? 40 : 90;
+  if (!isDeleting && charIndex === current.length) { speed = 2000; isDeleting = true; }
+  else if (isDeleting && charIndex === 0) { isDeleting = false; phraseIndex = (phraseIndex + 1) % phrases.length; speed = 500; }
+  setTimeout(typeEffect, speed);
+}
+typeEffect();
+
+/* ========== 滚动渐入 + 数字计数 ========== */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      if (entry.target.classList.contains('stat')) {
+        const numEl = entry.target.querySelector('.stat-number');
+        if (numEl && !numEl.dataset.done) { animateNumber(numEl); numEl.dataset.done = 'true'; }
+      }
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function animateNumber(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const duration = 2000;
+  const start = performance.now();
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    let value = Math.floor(target * eased);
+    if (target >= 1000000) el.textContent = (value / 1000000).toFixed(value >= 1000000 ? 0 : 1) + 'M' + suffix;
+    else if (target >= 1000) el.textContent = value.toLocaleString() + suffix;
+    else el.textContent = value + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+/* ========== 滚动进度 + 视差 ========== */
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (scrollTop / docHeight) * 100 + '%';
+  scrollOffset = scrollTop * 0.3;
+});
+
+/* ========== 卡片 3D 倾斜 ========== */
+document.querySelectorAll('.tilt').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const rotateX = (y - rect.height/2) / 20;
+    const rotateY = (rect.width/2 - x) / 20;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+  });
+});
+
+/* ========== 空白点击反馈 ========== */
+document.addEventListener('click', (e) => {
+  const interactive = e.target.closest('a, button, input, textarea, select, label, .card, .project-card, .preview-card, .stat, .growth-item, .btn');
+  if (interactive) return;
+  const burst = document.createElement('span');
+  burst.className = 'click-burst';
+  burst.style.setProperty('--x', e.clientX + 'px');
+  burst.style.setProperty('--y', e.clientY + 'px');
+  document.body.appendChild(burst);
+  burst.addEventListener('animationend', () => burst.remove(), { once: true });
+});
+
+</script>
+
+</body>
+</html>
