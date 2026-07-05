@@ -1051,7 +1051,7 @@
 
 <!-- 滚动进度条 -->
 <div id="progress-bar"></div>
-<audio id="bgm-audio" src="zhipu_assets/cyberpunk-sunrise.mp3" preload="none" loop></audio>
+<audio id="bgm-audio" src="zhipu_assets/cyberpunk-sunrise.mp3" preload="none"></audio>
 <button id="music-toggle" class="music-toggle" type="button" aria-label="播放背景音乐">BGM</button>
 
 <!-- 背景层 -->
@@ -1627,10 +1627,21 @@ document.querySelectorAll('.tilt').forEach(card => {
 const bgmAudio = document.getElementById('bgm-audio');
 const musicToggle = document.getElementById('music-toggle');
 if (bgmAudio && musicToggle) {
+  const bgmStartAt = 6;
   bgmAudio.volume = 0.36;
+  bgmAudio.addEventListener('loadedmetadata', () => {
+    if (bgmAudio.currentTime < bgmStartAt) bgmAudio.currentTime = bgmStartAt;
+  });
+  bgmAudio.addEventListener('timeupdate', () => {
+    if (bgmAudio.duration && bgmAudio.currentTime > bgmAudio.duration - 0.4) {
+      bgmAudio.currentTime = bgmStartAt;
+      bgmAudio.play().catch(() => {});
+    }
+  });
   musicToggle.addEventListener('click', async () => {
     if (bgmAudio.paused) {
       try {
+        if (bgmAudio.currentTime < bgmStartAt) bgmAudio.currentTime = bgmStartAt;
         await bgmAudio.play();
         musicToggle.classList.add('playing');
         musicToggle.setAttribute('aria-label', '暂停背景音乐');
